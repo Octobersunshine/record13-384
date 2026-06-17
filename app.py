@@ -33,6 +33,15 @@ def generate_sample_data():
     return df
 
 
+def min_max_normalize(series):
+    min_val = series.min()
+    max_val = series.max()
+    if max_val == min_val:
+        return pd.Series([0.5] * len(series)), min_val, max_val
+    normalized = (series - min_val) / (max_val - min_val)
+    return normalized, min_val, max_val
+
+
 def create_parallel_coordinates(df, color_column=None):
     dimensions = []
     numeric_columns = df.select_dtypes(include=[np.number]).columns.tolist()
@@ -46,7 +55,8 @@ def create_parallel_coordinates(df, color_column=None):
             showscale = True
             colorscale = 'Viridis'
         else:
-            color_values = df[color_column].tolist()
+            color_values_norm, _, _ = min_max_normalize(df[color_column])
+            color_values = color_values_norm.tolist()
             showscale = True
             colorscale = 'Viridis'
     else:
@@ -55,10 +65,23 @@ def create_parallel_coordinates(df, color_column=None):
         colorscale = 'Blues'
 
     for col in numeric_columns:
+        normalized_vals, orig_min, orig_max = min_max_normalize(df[col])
+        tick_vals = [0.0, 0.25, 0.5, 0.75, 1.0]
+        orig_range = orig_max - orig_min
+        tick_text = [
+            f'{orig_min:.2f}',
+            f'{orig_min + 0.25 * orig_range:.2f}',
+            f'{orig_min + 0.5 * orig_range:.2f}',
+            f'{orig_min + 0.75 * orig_range:.2f}',
+            f'{orig_max:.2f}'
+        ]
+
         dimensions.append({
-            'label': col,
-            'values': df[col].tolist(),
-            'range': [df[col].min(), df[col].max()]
+            'label': f'{col}<br>[{orig_min:.2f}, {orig_max:.2f}]',
+            'values': normalized_vals.tolist(),
+            'range': [0.0, 1.0],
+            'tickvals': tick_vals,
+            'ticktext': tick_text
         })
 
     fig = go.Figure(data=go.Parcoords(
@@ -73,15 +96,15 @@ def create_parallel_coordinates(df, color_column=None):
             ) if showscale else None
         ),
         dimensions=dimensions,
-        labelfont=dict(size=12),
-        tickfont=dict(size=10),
-        rangefont=dict(size=10)
+        labelfont=dict(size=11),
+        tickfont=dict(size=9),
+        rangefont=dict(size=9)
     ))
 
     fig.update_layout(
         title={
-            'text': '平行坐标图 - Parallel Coordinates Plot',
-            'y': 0.95,
+            'text': '平行坐标图 (已归一化) - Parallel Coordinates (Normalized)',
+            'y': 0.97,
             'x': 0.5,
             'xanchor': 'center',
             'yanchor': 'top',
@@ -89,8 +112,21 @@ def create_parallel_coordinates(df, color_column=None):
         },
         plot_bgcolor='white',
         paper_bgcolor='white',
-        margin=dict(l=80, r=80, t=80, b=80),
-        height=600
+        margin=dict(l=80, r=80, t=100, b=80),
+        height=650,
+        annotations=[
+            dict(
+                text='所有数值特征已归一化至 [0, 1]，刻度标签显示原始值范围',
+                xref='paper',
+                yref='paper',
+                x=0.5,
+                y=1.0,
+                xanchor='center',
+                yanchor='bottom',
+                showarrow=False,
+                font=dict(size=11, color='#666')
+            )
+        ]
     )
 
     return json.loads(fig.to_json())
