@@ -20,7 +20,7 @@
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
         }
 
@@ -53,6 +53,8 @@
             padding: 24px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
             height: fit-content;
+            position: sticky;
+            top: 20px;
         }
 
         .control-section {
@@ -101,6 +103,23 @@
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(56, 239, 125, 0.4);
+        }
+
+        .btn-success:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
         .btn-secondary {
@@ -239,6 +258,12 @@
             color: #856404;
         }
 
+        .plot-area {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
         .plot-container {
             background: white;
             border-radius: 16px;
@@ -250,6 +275,141 @@
         #plot {
             width: 100%;
             min-height: 550px;
+        }
+
+        .selection-panel {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .selection-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .selection-stats {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .selection-stat {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .selection-stat.total {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .selection-stat.percent {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .selection-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            margin-bottom: 0;
+            width: auto;
+        }
+
+        .selection-table-container {
+            max-height: 400px;
+            overflow: auto;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+        }
+
+        .selection-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .selection-table thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .selection-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 600;
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+        }
+
+        .selection-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #f0f0f0;
+            white-space: nowrap;
+        }
+
+        .selection-table tbody tr:hover {
+            background: #f8f9ff;
+        }
+
+        .selection-table tbody tr:nth-child(even) {
+            background: #fafafa;
+        }
+
+        .selection-table tbody tr:nth-child(even):hover {
+            background: #f0f3ff;
+        }
+
+        .index-col {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #667eea;
+            text-align: center;
+            position: sticky;
+            left: 0;
+            z-index: 5;
+        }
+
+        .selection-table thead th.index-col {
+            z-index: 15;
+        }
+
+        .empty-selection {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-selection-icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        .empty-selection-text {
+            font-size: 1rem;
+            margin-bottom: 6px;
+        }
+
+        .empty-selection-hint {
+            font-size: 0.85rem;
         }
 
         .loading {
@@ -325,6 +485,10 @@
             .header h1 {
                 font-size: 1.8rem;
             }
+
+            .control-panel {
+                position: static;
+            }
         }
 
         .instructions {
@@ -340,6 +504,29 @@
 
         .instructions strong {
             color: #667eea;
+        }
+
+        .active-filters {
+            background: #fff8e1;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 12px;
+            font-size: 0.85rem;
+            display: none;
+        }
+
+        .active-filters.show {
+            display: block;
+        }
+
+        .filter-tag {
+            display: inline-block;
+            background: #ff9800;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            margin: 3px;
+            font-size: 0.8rem;
         }
     </style>
 </head>
@@ -357,7 +544,8 @@
                     1. 上传 CSV 文件或使用示例数据<br>
                     2. 选择颜色映射列（可选）<br>
                     3. 点击生成图表<br>
-                    4. 拖动坐标轴可筛选数据范围
+                    4. <strong>拖动坐标轴滑块筛选数据</strong><br>
+                    5. 查看下方选中样本详情
                 </div>
 
                 <div class="control-section">
@@ -402,24 +590,63 @@
                 </div>
             </div>
 
-            <div class="plot-container">
-                <div class="error-message" id="errorMessage"></div>
-                <div class="loading" id="loading">
-                    <div class="spinner"></div>
-                    <div class="loading-text">正在生成图表...</div>
+            <div class="plot-area">
+                <div class="plot-container">
+                    <div class="error-message" id="errorMessage"></div>
+                    <div class="loading" id="loading">
+                        <div class="spinner"></div>
+                        <div class="loading-text">正在生成图表...</div>
+                    </div>
+                    <div class="placeholder" id="placeholder">
+                        <div class="placeholder-icon">📈</div>
+                        <div class="placeholder-text">上传数据或加载示例以生成图表</div>
+                        <div class="placeholder-hint">平行坐标图可直观展示高维数据中各样本的特征分布</div>
+                    </div>
+                    <div id="plot"></div>
                 </div>
-                <div class="placeholder" id="placeholder">
-                    <div class="placeholder-icon">📈</div>
-                    <div class="placeholder-text">上传数据或加载示例以生成图表</div>
-                    <div class="placeholder-hint">平行坐标图可直观展示高维数据中各样本的特征分布</div>
+
+                <div class="selection-panel" id="selectionPanel" style="display: none;">
+                    <div class="selection-header">
+                        <div class="section-title" style="margin-bottom: 0;">🔍 选中样本详情</div>
+                        <div class="selection-stats">
+                            <div class="selection-stat total">总数: <span id="totalCount">0</span></div>
+                            <div class="selection-stat">选中: <span id="selectedCount">0</span></div>
+                            <div class="selection-stat percent">占比: <span id="selectedPercent">0</span>%</div>
+                        </div>
+                    </div>
+
+                    <div class="active-filters" id="activeFilters"></div>
+
+                    <div class="selection-actions" style="margin-bottom: 16px;">
+                        <button class="btn btn-success btn-small" id="exportSelectedBtn" disabled>📥 导出选中数据 (CSV)</button>
+                        <button class="btn btn-secondary btn-small" id="clearSelectionBtn" disabled>✖ 清除筛选</button>
+                    </div>
+
+                    <div class="empty-selection" id="emptySelection">
+                        <div class="empty-selection-icon">🎯</div>
+                        <div class="empty-selection-text">尚未进行数据筛选</div>
+                        <div class="empty-selection-hint">请在上方平行坐标图中拖动坐标轴滑块进行范围筛选</div>
+                    </div>
+
+                    <div class="selection-table-container" id="tableContainer" style="display: none;">
+                        <table class="selection-table" id="selectionTable">
+                            <thead id="tableHead"></thead>
+                            <tbody id="tableBody"></tbody>
+                        </table>
+                    </div>
                 </div>
-                <div id="plot"></div>
             </div>
         </div>
     </div>
 
     <script>
         let currentCsvData = null;
+        let currentDataRecords = [];
+        let currentColumns = [];
+        let currentNumericColumns = [];
+        let currentColumnMinMax = {};
+        let currentPlotData = null;
+        let debounceTimer = null;
 
         const fileInput = document.getElementById('fileInput');
         const fileDrop = document.getElementById('fileDrop');
@@ -431,6 +658,14 @@
         const placeholder = document.getElementById('placeholder');
         const errorMessage = document.getElementById('errorMessage');
         const dataInfoSection = document.getElementById('dataInfoSection');
+        const selectionPanel = document.getElementById('selectionPanel');
+        const emptySelection = document.getElementById('emptySelection');
+        const tableContainer = document.getElementById('tableContainer');
+        const tableHead = document.getElementById('tableHead');
+        const tableBody = document.getElementById('tableBody');
+        const exportSelectedBtn = document.getElementById('exportSelectedBtn');
+        const clearSelectionBtn = document.getElementById('clearSelectionBtn');
+        const activeFilters = document.getElementById('activeFilters');
 
         fileDrop.addEventListener('click', () => fileInput.click());
 
@@ -544,6 +779,7 @@
                 showLoading();
                 hideError();
                 placeholder.style.display = 'none';
+                selectionPanel.style.display = 'none';
 
                 const response = await fetch('/api/generate-plot', {
                     method: 'POST',
@@ -560,7 +796,21 @@
                 }
 
                 const data = await response.json();
-                renderPlot(data.plot);
+                currentDataRecords = data.data_records;
+                currentColumns = data.columns;
+                currentNumericColumns = data.numeric_columns;
+                currentColumnMinMax = data.column_min_max;
+                currentPlotData = data.plot;
+
+                document.getElementById('totalCount').textContent = data.row_count;
+                document.getElementById('selectedCount').textContent = data.row_count;
+                document.getElementById('selectedPercent').textContent = '100.00';
+
+                renderPlot(currentPlotData);
+
+                selectionPanel.style.display = 'block';
+                renderSelectionTable(currentDataRecords);
+
             } catch (err) {
                 showError(err.message);
                 placeholder.style.display = 'block';
@@ -591,7 +841,222 @@
                 }
             };
 
-            Plotly.newPlot('plot', plotData.data, layout, config);
+            Plotly.newPlot('plot', plotData.data, layout, config).then(() => {
+                plotDiv.on('plotly_relayout', handleRelayout);
+            });
+        }
+
+        function handleRelayout(eventData) {
+            if (!currentDataRecords.length) return;
+
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                computeSelectedSamples(eventData);
+            }, 150);
+        }
+
+        function computeSelectedSamples(eventData) {
+            const dimensionConstraints = {};
+            const filterTags = [];
+
+            const keys = Object.keys(eventData);
+            keys.forEach(key => {
+                const match = key.match(/^dimensions\[(\d+)\]\.constraintrange$/);
+                if (match) {
+                    const dimIndex = parseInt(match[1]);
+                    const range = eventData[key];
+                    if (range && range.length === 2) {
+                        dimensionConstraints[dimIndex] = range;
+                        const colName = currentNumericColumns[dimIndex];
+                        const mm = currentColumnMinMax[colName];
+                        if (mm) {
+                            const origMin = mm.min + range[0] * (mm.max - mm.min);
+                            const origMax = mm.min + range[1] * (mm.max - mm.min);
+                            filterTags.push(`<span class="filter-tag">${colName}: [${origMin.toFixed(2)}, ${origMax.toFixed(2)}]</span>`);
+                        }
+                    }
+                }
+            });
+
+            if (filterTags.length > 0) {
+                activeFilters.innerHTML = '<strong>当前筛选条件：</strong><br>' + filterTags.join(' ');
+                activeFilters.classList.add('show');
+                clearSelectionBtn.disabled = false;
+            } else {
+                activeFilters.classList.remove('show');
+                clearSelectionBtn.disabled = true;
+            }
+
+            if (Object.keys(dimensionConstraints).length === 0) {
+                document.getElementById('selectedCount').textContent = currentDataRecords.length;
+                document.getElementById('selectedPercent').textContent = '100.00';
+                renderSelectionTable(currentDataRecords);
+                exportSelectedBtn.disabled = true;
+                emptySelection.style.display = 'block';
+                tableContainer.style.display = 'none';
+                return;
+            }
+
+            const selectedRecords = currentDataRecords.filter(record => {
+                for (const [dimIndex, [normMin, normMax]] of Object.entries(dimensionConstraints)) {
+                    const colName = currentNumericColumns[parseInt(dimIndex)];
+                    const rawValue = record[colName];
+                    if (rawValue === null || rawValue === undefined) return false;
+                    const mm = currentColumnMinMax[colName];
+                    if (!mm) continue;
+                    let normalized;
+                    if (mm.max === mm.min) {
+                        normalized = 0.5;
+                    } else {
+                        normalized = (rawValue - mm.min) / (mm.max - mm.min);
+                    }
+                    if (normalized < normMin || normalized > normMax) {
+                        return false;
+                    }
+                }
+                return true;
+            });
+
+            document.getElementById('selectedCount').textContent = selectedRecords.length;
+            const percent = currentDataRecords.length > 0
+                ? ((selectedRecords.length / currentDataRecords.length) * 100).toFixed(2)
+                : '0.00';
+            document.getElementById('selectedPercent').textContent = percent;
+
+            exportSelectedBtn.disabled = selectedRecords.length === 0;
+            renderSelectionTable(selectedRecords);
+        }
+
+        function renderSelectionTable(records) {
+            if (!records || records.length === 0) {
+                emptySelection.style.display = 'block';
+                tableContainer.style.display = 'none';
+                emptySelection.querySelector('.empty-selection-icon').textContent = '❌';
+                emptySelection.querySelector('.empty-selection-text').textContent = '没有符合筛选条件的样本';
+                emptySelection.querySelector('.empty-selection-hint').textContent = '请调整筛选范围';
+                return;
+            }
+
+            emptySelection.style.display = 'none';
+            tableContainer.style.display = 'block';
+
+            const displayRecords = records.slice(0, 500);
+
+            const headRow = ['<th class="index-col">#</th>'];
+            currentColumns.forEach(col => {
+                headRow.push(`<th>${escapeHtml(col)}</th>`);
+            });
+            tableHead.innerHTML = `<tr>${headRow.join('')}</tr>`;
+
+            const bodyRows = displayRecords.map((rec, idx) => {
+                const cells = [`<td class="index-col">${escapeHtml(String(rec._index))}</td>`];
+                currentColumns.forEach(col => {
+                    const val = rec[col];
+                    const displayVal = (typeof val === 'number') ? Number(val).toFixed(4) : String(val);
+                    cells.push(`<td>${escapeHtml(displayVal)}</td>`);
+                });
+                return `<tr>${cells.join('')}</tr>`;
+            });
+            tableBody.innerHTML = bodyRows.join('');
+
+            if (records.length > 500) {
+                const footerInfo = document.createElement('tr');
+                footerInfo.innerHTML = `<td colspan="${currentColumns.length + 1}" style="text-align: center; padding: 12px; color: #888; font-style: italic; background: #fafafa;">仅显示前 500 条记录（共 ${records.length} 条选中），请导出 CSV 查看完整数据</td>`;
+                tableBody.appendChild(footerInfo);
+            }
+        }
+
+        exportSelectedBtn.addEventListener('click', () => {
+            if (!currentDataRecords.length) return;
+
+            const constraints = getCurrentConstraints();
+            let selectedRecords = currentDataRecords;
+
+            if (Object.keys(constraints).length > 0) {
+                selectedRecords = currentDataRecords.filter(record => {
+                    for (const [dimIndex, [normMin, normMax]] of Object.entries(constraints)) {
+                        const colName = currentNumericColumns[parseInt(dimIndex)];
+                        const rawValue = record[colName];
+                        if (rawValue === null || rawValue === undefined) return false;
+                        const mm = currentColumnMinMax[colName];
+                        if (!mm) continue;
+                        let normalized;
+                        if (mm.max === mm.min) {
+                            normalized = 0.5;
+                        } else {
+                            normalized = (rawValue - mm.min) / (mm.max - mm.min);
+                        }
+                        if (normalized < normMin || normalized > normMax) {
+                            return false;
+                        }
+                    }
+                    return true;
+                });
+            }
+
+            exportToCsv(selectedRecords);
+        });
+
+        function getCurrentConstraints() {
+            const constraints = {};
+            if (!plotDiv.data || !plotDiv.data[0] || !plotDiv.data[0].dimensions) return constraints;
+            const dims = plotDiv.data[0].dimensions;
+            dims.forEach((dim, idx) => {
+                if (dim.constraintrange && dim.constraintrange.length === 2) {
+                    constraints[idx] = dim.constraintrange;
+                }
+            });
+            return constraints;
+        }
+
+        function exportToCsv(records) {
+            if (!records.length) return;
+
+            const header = currentColumns.join(',');
+            const rows = records.map(rec => {
+                return currentColumns.map(col => {
+                    let val = rec[col];
+                    if (val === null || val === undefined) return '';
+                    val = String(val);
+                    if (val.includes(',') || val.includes('"') || val.includes('\n')) {
+                        val = '"' + val.replace(/"/g, '""') + '"';
+                    }
+                    return val;
+                }).join(',');
+            });
+
+            const csvContent = '\ufeff' + [header, ...rows].join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', `selected_samples_${new Date().toISOString().slice(0, 10)}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        clearSelectionBtn.addEventListener('click', () => {
+            if (!plotDiv.data || !plotDiv.data[0]) return;
+
+            const update = {};
+            currentNumericColumns.forEach((_, idx) => {
+                update[`dimensions[${idx}].constraintrange`] = null;
+            });
+
+            Plotly.relayout('plot', update).then(() => {
+                computeSelectedSamples({});
+                activeFilters.classList.remove('show');
+                clearSelectionBtn.disabled = true;
+            });
+        });
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         function showLoading() {

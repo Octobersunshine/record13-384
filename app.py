@@ -179,11 +179,24 @@ def generate_plot():
 
         plot_json = create_parallel_coordinates(df, color_column)
 
+        df_with_index = df.copy()
+        df_with_index.insert(0, '_index', range(len(df)))
+        data_records = df_with_index.to_dict(orient='records')
+
+        column_min_max = {}
+        for col in numeric_columns:
+            column_min_max[col] = {
+                'min': float(df[col].min()),
+                'max': float(df[col].max())
+            }
+
         return jsonify({
             'plot': plot_json,
             'columns': df.columns.tolist(),
             'numeric_columns': numeric_columns,
             'row_count': len(df),
+            'data_records': data_records,
+            'column_min_max': column_min_max,
             'summary': df.describe().to_json()
         })
 
