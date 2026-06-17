@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>平行坐标图可视化服务</title>
+    <script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+        }
+
+        .control-panel {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            height: fit-content;
+        }
+
+        .control-section {
+            margin-bottom: 24px;
+        }
+
+        .control-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .file-upload {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+        }
+
+        .file-upload:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .file-upload.dragover {
+            border-color: #667eea;
+            background: #f0f3ff;
+        }
+
+        .file-upload-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .file-upload-text {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .file-upload-hint {
+            color: #999;
+            font-size: 0.8rem;
+            margin-top: 4px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #555;
+            margin-bottom: 6px;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .data-info {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 12px;
+        }
+
+        .data-info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 0.85rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .data-info-item:last-child {
+            border-bottom: none;
+        }
+
+        .data-info-label {
+            color: #666;
+        }
+
+        .data-info-value {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .columns-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+
+        .column-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #e9ecef;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin: 3px;
+        }
+
+        .column-badge.numeric {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .column-badge.categorical {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .plot-container {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            min-height: 600px;
+        }
+
+        #plot {
+            width: 100%;
+            min-height: 550px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .error-message {
+            display: none;
+            background: #fee;
+            border: 1px solid #fcc;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 20px 0;
+            color: #c33;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .placeholder {
+            text-align: center;
+            padding: 80px 20px;
+            color: #999;
+        }
+
+        .placeholder-icon {
+            font-size: 4rem;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .placeholder-text {
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+        }
+
+        .placeholder-hint {
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+        }
+
+        .instructions {
+            background: #f0f7ff;
+            border-left: 4px solid #667eea;
+            padding: 12px 16px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+            font-size: 0.85rem;
+            color: #444;
+            line-height: 1.6;
+        }
+
+        .instructions strong {
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 平行坐标图可视化服务</h1>
+            <p>高维数据探索与分析工具 - 每条线代表一个样本</p>
+        </div>
+
+        <div class="main-content">
+            <div class="control-panel">
+                <div class="instructions">
+                    <strong>使用说明：</strong>
+                    1. 上传 CSV 文件或使用示例数据<br>
+                    2. 选择颜色映射列（可选）<br>
+                    3. 点击生成图表<br>
+                    4. 拖动坐标轴可筛选数据范围
+                </div>
+
+                <div class="control-section">
+                    <div class="section-title">数据来源</div>
+                    <label for="fileInput" class="file-upload" id="fileDrop">
+                        <div class="file-upload-icon">📁</div>
+                        <div class="file-upload-text">点击或拖拽上传 CSV 文件</div>
+                        <div class="file-upload-hint">支持 .csv 格式</div>
+                    </label>
+                    <input type="file" id="fileInput" accept=".csv">
+                    <button class="btn btn-secondary" id="loadSampleBtn">🎯 加载示例数据</button>
+                </div>
+
+                <div class="control-section">
+                    <div class="section-title">图表配置</div>
+                    <div class="form-group">
+                        <label class="form-label" for="colorColumn">颜色映射列</label>
+                        <select class="form-select" id="colorColumn">
+                            <option value="">-- 不使用颜色映射 --</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" id="generateBtn" disabled>🔄 生成平行坐标图</button>
+                </div>
+
+                <div class="control-section" id="dataInfoSection" style="display: none;">
+                    <div class="section-title">数据概览</div>
+                    <div class="data-info">
+                        <div class="data-info-item">
+                            <span class="data-info-label">样本数量</span>
+                            <span class="data-info-value" id="rowCount">-</span>
+                        </div>
+                        <div class="data-info-item">
+                            <span class="data-info-label">总列数</span>
+                            <span class="data-info-value" id="colCount">-</span>
+                        </div>
+                        <div class="data-info-item">
+                            <span class="data-info-label">数值列数</span>
+                            <span class="data-info-value" id="numericColCount">-</span>
+                        </div>
+                    </div>
+                    <div class="columns-list" id="columnsList"></div>
+                </div>
+            </div>
+
+            <div class="plot-container">
+                <div class="error-message" id="errorMessage"></div>
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <div class="loading-text">正在生成图表...</div>
+                </div>
+                <div class="placeholder" id="placeholder">
+                    <div class="placeholder-icon">📈</div>
+                    <div class="placeholder-text">上传数据或加载示例以生成图表</div>
+                    <div class="placeholder-hint">平行坐标图可直观展示高维数据中各样本的特征分布</div>
+                </div>
+                <div id="plot"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentCsvData = null;
+
+        const fileInput = document.getElementById('fileInput');
+        const fileDrop = document.getElementById('fileDrop');
+        const loadSampleBtn = document.getElementById('loadSampleBtn');
+        const generateBtn = document.getElementById('generateBtn');
+        const colorColumn = document.getElementById('colorColumn');
+        const plotDiv = document.getElementById('plot');
+        const loading = document.getElementById('loading');
+        const placeholder = document.getElementById('placeholder');
+        const errorMessage = document.getElementById('errorMessage');
+        const dataInfoSection = document.getElementById('dataInfoSection');
+
+        fileDrop.addEventListener('click', () => fileInput.click());
+
+        fileDrop.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileDrop.classList.add('dragover');
+        });
+
+        fileDrop.addEventListener('dragleave', () => {
+            fileDrop.classList.remove('dragover');
+        });
+
+        fileDrop.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileDrop.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            if (!file.name.endsWith('.csv')) {
+                showError('请上传 CSV 格式的文件');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                currentCsvData = e.target.result;
+                analyzeData();
+            };
+            reader.readAsText(file);
+        }
+
+        loadSampleBtn.addEventListener('click', async () => {
+            try {
+                showLoading();
+                const response = await fetch('/api/sample-data');
+                const data = await response.json();
+                currentCsvData = data.csv;
+                hideError();
+                analyzeData();
+            } catch (err) {
+                showError('加载示例数据失败: ' + err.message);
+            } finally {
+                hideLoading();
+            }
+        });
+
+        async function analyzeData() {
+            try {
+                const response = await fetch('/api/analyze-columns', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ csv: currentCsvData })
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.error || '数据分析失败');
+                }
+
+                const data = await response.json();
+                updateColumnInfo(data);
+                generateBtn.disabled = false;
+            } catch (err) {
+                showError(err.message);
+                generateBtn.disabled = true;
+            }
+        }
+
+        function updateColumnInfo(data) {
+            document.getElementById('rowCount').textContent = data.row_count;
+            document.getElementById('colCount').textContent = data.columns.length;
+            document.getElementById('numericColCount').textContent = data.numeric_column_count;
+
+            colorColumn.innerHTML = '<option value="">-- 不使用颜色映射 --</option>';
+            data.columns.forEach(col => {
+                const option = document.createElement('option');
+                option.value = col.name;
+                option.textContent = `${col.name} (${col.type})`;
+                colorColumn.appendChild(option);
+            });
+
+            const columnsList = document.getElementById('columnsList');
+            columnsList.innerHTML = '';
+            data.columns.forEach(col => {
+                const badge = document.createElement('span');
+                badge.className = `column-badge ${col.is_numeric ? 'numeric' : 'categorical'}`;
+                badge.textContent = col.name;
+                badge.title = `类型: ${col.type}, 唯一值: ${col.unique_count}`;
+                columnsList.appendChild(badge);
+            });
+
+            dataInfoSection.style.display = 'block';
+        }
+
+        generateBtn.addEventListener('click', generatePlot);
+
+        async function generatePlot() {
+            if (!currentCsvData) return;
+
+            try {
+                showLoading();
+                hideError();
+                placeholder.style.display = 'none';
+
+                const response = await fetch('/api/generate-plot', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        csv: currentCsvData,
+                        color_column: colorColumn.value || null
+                    })
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.error || '图表生成失败');
+                }
+
+                const data = await response.json();
+                renderPlot(data.plot);
+            } catch (err) {
+                showError(err.message);
+                placeholder.style.display = 'block';
+                plotDiv.innerHTML = '';
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function renderPlot(plotData) {
+            const layout = {
+                ...plotData.layout,
+                autosize: true,
+                responsive: true
+            };
+
+            const config = {
+                responsive: true,
+                displayModeBar: true,
+                displaylogo: false,
+                modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+                toImageButtonOptions: {
+                    format: 'png',
+                    filename: 'parallel-coordinates-plot',
+                    height: 800,
+                    width: 1400,
+                    scale: 2
+                }
+            };
+
+            Plotly.newPlot('plot', plotData.data, layout, config);
+        }
+
+        function showLoading() {
+            loading.classList.add('show');
+            plotDiv.innerHTML = '';
+        }
+
+        function hideLoading() {
+            loading.classList.remove('show');
+        }
+
+        function showError(message) {
+            errorMessage.textContent = '❌ ' + message;
+            errorMessage.classList.add('show');
+        }
+
+        function hideError() {
+            errorMessage.classList.remove('show');
+        }
+    </script>
+</body>
+</html>
